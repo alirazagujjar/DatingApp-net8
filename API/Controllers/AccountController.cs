@@ -9,46 +9,52 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController:BaseApiController
+public class AccountController : BaseApiController
 {
- private readonly DataContext context;
- private readonly ITokenService _tokenServic;
-    public AccountController(DataContext _context,ITokenService tokenService)
+    private readonly DataContext context;
+    private readonly ITokenService _tokenServic;
+    public AccountController(DataContext _context, ITokenService tokenService)
     {
-        context=_context;
-        _tokenServic=tokenService;
+        context = _context;
+        _tokenServic = tokenService;
     }
     [HttpPost("register")]
-    public async Task<ActionResult<AppUser>> Register(RegisterUser register)
+    public async Task<ActionResult<UserDto>> Register(RegisterUser register)
     {
-        if(await CheckUserExist(register.UserName))
+        if (await CheckUserExist(register.UserName))
         {
-            return BadRequest(new{Message="User alreday exist",status=0});
+            return BadRequest(new { Message = "User alreday exist", status = 0 });
         }
-        using var hmac= new HMACSHA512();
+        using var hmac = new HMACSHA512();
         var user = new AppUser
         {
-            UserName= register.UserName.ToLower(),
+            UserName = register.UserName.ToLower(),
             PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.PassWord)),
             PasswordSalt = hmac.Key
         };
         context.Users.Add(user);
         await context.SaveChangesAsync();
-        return Ok(new{data=user,status=1});
+        LoginDto loginDto = new LoginDto()
+        {
+            UserName = user.UserName,
+            PassWord = register.PassWord
+        };
+        var loginResult = await Login(loginDto);
+        return  loginResult;
     }
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto login)
     {
-        var user = await context.Users.FirstOrDefaultAsync(a=>a.UserName.ToLower()==login.UserName.ToLower());
-        if(user==null) return Unauthorized(new{status=0,messgae="UserName is incorrect"});
-        using var hmac=new HMACSHA512(user.PasswordSalt);
+        var user = await context.Users.FirstOrDefaultAsync(a => a.UserName.ToLower() == login.UserName.ToLower());
+        if (user == null) return Unauthorized(new { status = 0, messgae = "UserName is incorrect" });
+        using var hmac = new HMACSHA512(user.PasswordSalt);
         var ComputeHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(login.PassWord));
-        for(int i=0;i<ComputeHash.Length;i++)
+        for (int i = 0; i < ComputeHash.Length; i++)
         {
-            if(ComputeHash[i] != user.PasswordHash[i])return Unauthorized(new{status=0,messgae="Password incorrect"});
+            if (ComputeHash[i] != user.PasswordHash[i]) return Unauthorized(new { status = 0, messgae = "Password incorrect" });
 
         }
-        var userdto=new UserDto
+        var userdto = new UserDto
         {
             UserName = user.UserName,
             Token = _tokenServic.CreateToken(user)
@@ -57,7 +63,7 @@ public class AccountController:BaseApiController
     }
     private async Task<bool> CheckUserExist(string username)
     {
-       return await context.Users.AnyAsync(a=>a.UserName.ToLower()==username.ToLower());
-        
+        return await context.Users.AnyAsync(a => a.UserName.ToLower() == username.ToLower());
+
     }
 }
