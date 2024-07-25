@@ -1,7 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.Dtos;
 
 public class RegisterUser
 {
-  public required string UserName{get;set;}
-  public required string PassWord{get;set;}
+  [Required]
+  public  string? UserName{get;set;}
+  [Required]
+  [StringLength(8,MinimumLength =4)]
+  public  string? PassWord{get;set;}
 }

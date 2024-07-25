@@ -12,7 +12,9 @@
             <li class="nav-item">
               <a routerLink="/messages" routerLinkActive="active" class="nav-link">Messages</a>
             </li>
-           
+            <li class="nav-item">
+              <a routerLink="/error" routerLinkActive="active" class="nav-link">Errors</a>
+            </li>
           </ul>
           <div dropdown class="dropdown">
             <a dropdownToggle class="dropdown-toggle text-light text-decoration-none">Welcome {{accountService.currentUser()?.userName | titlecase}}</a>
