@@ -17,7 +17,7 @@ export const routes: Routes = [
         canActivate:[authGuard],
         children:[
             {path:'members',component:MemberListComponent , canActivate:[authGuard]},
-            {path:'members/:id',component:MemberDetailsComponent,canActivate:[authGuard]},
+            {path:'members/:username',component:MemberDetailsComponent,canActivate:[authGuard]},
             {path:'lists',component:ListsComponent,canActivate:[authGuard]},
             {path:'messages',component:MessagesComponent,canActivate:[authGuard]}
         ]

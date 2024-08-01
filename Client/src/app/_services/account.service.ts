@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, signal } from '@angular/core';
 import { User } from '../_models/User';
 import { map } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class AccountService {
 
   //http = Inject(HttpClient);
   constructor(private http: HttpClient) { }
-  baseUrl = 'https://localhost:5001/api/';
+  baseUrl = environment.appUrl;
   currentUser = signal<User | null>(null);
   login(model: any) {
     return this.http.post<User>(this.baseUrl + 'account/login', model).pipe(
