@@ -13,6 +13,7 @@ public static class ApplicationServiceExtension
     )
     {
         services.AddControllers();
+        
         services.AddDbContext<DataContext>(opt =>
         {
             _ = opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
@@ -28,6 +29,8 @@ public static class ApplicationServiceExtension
                                         .AllowAnyMethod());
                 });
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserRepository,UserRepository>();
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         return services;
     }
 }

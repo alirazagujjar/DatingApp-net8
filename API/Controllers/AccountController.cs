@@ -25,22 +25,23 @@ public class AccountController : BaseApiController
         {
             return BadRequest(new { Message = "User alreday exist", status = 0 });
         }
-        using var hmac = new HMACSHA512();
-        var user = new AppUser
-        {
-            UserName = register.UserName.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.PassWord)),
-            PasswordSalt = hmac.Key
-        };
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
-        LoginDto loginDto = new LoginDto()
-        {
-            UserName = user.UserName,
-            PassWord = register.PassWord
-        };
-        var loginResult = await Login(loginDto);
-        return  loginResult;
+        return Ok();
+        // using var hmac = new HMACSHA512();
+        // var user = new AppUser
+        // {
+        //     UserName = register.UserName.ToLower(),
+        //     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.PassWord)),
+        //     PasswordSalt = hmac.Key
+        // };
+        // context.Users.Add(user);
+        // await context.SaveChangesAsync();
+        // LoginDto loginDto = new LoginDto()
+        // {
+        //     UserName = user.UserName,
+        //     PassWord = register.PassWord
+        // };
+        // var loginResult = await Login(loginDto);
+        // return  loginResult;
     }
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto login)
