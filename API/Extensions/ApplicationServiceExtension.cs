@@ -1,4 +1,5 @@
 using API.Data;
+using API.Helpers;
 using API.interfaces;
 using API.Service;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,9 @@ public static class ApplicationServiceExtension
         IConfiguration config
     )
     {
+        // configure API controllers
         services.AddControllers();
-        
+        // Configure Database
         services.AddDbContext<DataContext>(opt =>
         {
             _ = opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
@@ -21,6 +23,7 @@ public static class ApplicationServiceExtension
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        // Add cors
         services.AddCors(options =>
                 {
                     options.AddPolicy("AllowSpecificOrigin",
@@ -28,9 +31,15 @@ public static class ApplicationServiceExtension
                                         .AllowAnyHeader()
                                         .AllowAnyMethod());
                 });
+                // DI parent and chlid class
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserRepository,UserRepository>();
+        services.AddScoped<IPhotoService,PhotoService>();
+        // Auto,apper configure
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        // Cloudinary credentials mapp on custom class
+        services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+        
         return services;
     }
 }

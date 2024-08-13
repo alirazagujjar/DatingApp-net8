@@ -46,7 +46,9 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto login)
     {
-        var user = await context.Users.FirstOrDefaultAsync(a => a.UserName.ToLower() == login.UserName.ToLower());
+        var user = await context.Users
+        .Include(a=>a.Photos)
+            .FirstOrDefaultAsync(a => a.UserName.ToLower() == login.UserName.ToLower());
         if (user == null) return Unauthorized(new { status = 0, messgae = "UserName is incorrect" });
         using var hmac = new HMACSHA512(user.PasswordSalt);
         var ComputeHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(login.PassWord));
@@ -58,7 +60,8 @@ public class AccountController : BaseApiController
         var userdto = new UserDto
         {
             UserName = user.UserName,
-            Token = _tokenServic.CreateToken(user)
+            Token = _tokenServic.CreateToken(user),
+            PhotoUrl= user.Photos.FirstOrDefault(x=>x.IsMain)?.Url
         };
         return userdto;
     }
