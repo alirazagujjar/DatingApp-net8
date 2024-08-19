@@ -4,6 +4,7 @@ using API.Data;
 using API.Dtos;
 using API.Entities;
 using API.interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +14,12 @@ public class AccountController : BaseApiController
 {
     private readonly DataContext context;
     private readonly ITokenService _tokenServic;
-    public AccountController(DataContext _context, ITokenService tokenService)
+    private readonly IMapper _maper;
+    public AccountController(DataContext _context, ITokenService tokenService,IMapper mapper)
     {
         context = _context;
         _tokenServic = tokenService;
+        _maper= mapper;
     }
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterUser register)
@@ -25,23 +28,21 @@ public class AccountController : BaseApiController
         {
             return BadRequest(new { Message = "User alreday exist", status = 0 });
         }
-        return Ok();
-        // using var hmac = new HMACSHA512();
-        // var user = new AppUser
-        // {
-        //     UserName = register.UserName.ToLower(),
-        //     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.PassWord)),
-        //     PasswordSalt = hmac.Key
-        // };
-        // context.Users.Add(user);
-        // await context.SaveChangesAsync();
-        // LoginDto loginDto = new LoginDto()
-        // {
-        //     UserName = user.UserName,
-        //     PassWord = register.PassWord
-        // };
-        // var loginResult = await Login(loginDto);
-        // return  loginResult;
+    
+        using var hmac = new HMACSHA512();
+        var user = _maper.Map<AppUser>(register);
+        user.UserName = user.UserName.ToLower();
+        user.PasswordHash=hmac.ComputeHash(Encoding.UTF8.GetBytes(register.PassWord));
+        user.PasswordSalt = hmac.Key;
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+        LoginDto loginDto = new LoginDto()
+        {
+            UserName = user.UserName,
+            PassWord = register.PassWord
+        };
+        var loginResult = await Login(loginDto);
+        return  loginResult;
     }
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto login)
@@ -60,6 +61,7 @@ public class AccountController : BaseApiController
         var userdto = new UserDto
         {
             UserName = user.UserName,
+            KnownAs = user.KnownAs,
             Token = _tokenServic.CreateToken(user),
             PhotoUrl= user.Photos.FirstOrDefault(x=>x.IsMain)?.Url
         };
