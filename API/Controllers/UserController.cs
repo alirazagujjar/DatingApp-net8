@@ -1,13 +1,11 @@
-using System.Security.Claims;
-using API.Data;
 using API.Dtos;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 namespace API.Controllers;
 
 [Authorize]
@@ -23,10 +21,12 @@ public class UserController : BaseApiController
         _photoService = photoService;
     }
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        var users = await userRepository.GetMembersAsync();
+        userParams.CurrentUserName = User.GetUserName();
+        var users = await userRepository.GetMembersAsync(userParams);
         if (users == null) return NotFound();
+        Response.AddPaginationHeader(users);
         return Ok(users);
     }
     [HttpGet("{id:int}")]
@@ -39,7 +39,7 @@ public class UserController : BaseApiController
     [HttpGet("GetUserByName")]
     public async Task<ActionResult<MemberDto>> GetUserByName(string name)
     {
-        var users = await userRepository.GetMemberAsync(User.GetUserName());
+        var users = await userRepository.GetMemberAsync(name);
         if (users == null) return NotFound();
         return Ok(users);
     }

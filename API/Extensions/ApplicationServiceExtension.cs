@@ -35,6 +35,8 @@ public static class ApplicationServiceExtension
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserRepository,UserRepository>();
         services.AddScoped<IPhotoService,PhotoService>();
+        // Action filter register in DI
+        services.AddScoped<LogUserActivity>();
         // Auto,apper configure
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         // Cloudinary credentials mapp on custom class

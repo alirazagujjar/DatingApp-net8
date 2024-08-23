@@ -20,7 +20,8 @@ public class TokenService : ITokenService
         if(tokenkey.Length<64) throw new Exception("Token key is too short");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenkey));
         var claims = new List<Claim>(){
-            new(ClaimTypes.NameIdentifier, appUser.UserName)
+            new(ClaimTypes.NameIdentifier, appUser.Id.ToString()),
+            new(ClaimTypes.Name, appUser.UserName)
         };
 
         var cred = new SigningCredentials(key,SecurityAlgorithms.HmacSha512Signature);

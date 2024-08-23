@@ -63,7 +63,8 @@ public class AccountController : BaseApiController
             UserName = user.UserName,
             KnownAs = user.KnownAs,
             Token = _tokenServic.CreateToken(user),
-            PhotoUrl= user.Photos.FirstOrDefault(x=>x.IsMain)?.Url
+            PhotoUrl= user.Photos.FirstOrDefault(x=>x.IsMain)?.Url,
+            Gender = user.Gender
         };
         return userdto;
     }
